@@ -16,6 +16,10 @@ export type Alarm = {
   status: AlarmStatus
   confirmedAt?: string
   createdAt: string
+  /** 発火時に決まる音声確認フレーズ。対象者がこれを読み上げる */
+  wakePhrase?: string
+  /** 音声で確認できた場合 true。ボタン確認と区別してデモで見せる */
+  confirmedByVoice?: boolean
 }
 
 export type GroupState = {
@@ -30,6 +34,38 @@ export type GroupState = {
 const TIMEOUT_SECONDS = 5 * 60
 /** フロントの AlarmForm maxLength と揃える */
 const MAX_MESSAGE_LENGTH = 100
+
+/** 寝ぼけたままでは言い切りにくい、口が回る必要のある確認フレーズ */
+const WAKE_PHRASES = [
+  'おはようございます、今日も一日がんばります',
+  '赤巻紙 青巻紙 黄巻紙',
+  'すもももももももものうち',
+  '東京特許許可局に行ってきます',
+  'なまむぎ なまごめ なまたまご',
+  '今日はとてもいい天気ですね',
+  'バスガス爆発、バスガス爆発',
+  'この芝生に入らないでください'
+]
+
+/** 文字起こし結果とフレーズを比べるための正規化（記号・空白・カナ差を吸収） */
+function normalizeForCompare(text: string): string {
+  return text
+    .replace(/[\s\p{P}\p{S}]/gu, '')
+    .replace(/[ァ-ヶ]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x60))
+    .toLowerCase()
+}
+
+/** 2文字ごとの重なり具合で類似度を測る（音声認識の揺れを許容するため完全一致にしない） */
+function similarity(a: string, b: string): number {
+  if (!a || !b) return 0
+  if (a === b) return 1
+  const bigrams = (s: string) =>
+    s.length < 2 ? [s] : Array.from({ length: s.length - 1 }, (_, i) => s.slice(i, i + 2))
+  const aGrams = bigrams(a)
+  const bGrams = new Set(bigrams(b))
+  const hit = aGrams.filter((g) => bGrams.has(g)).length
+  return hit / Math.max(aGrams.length, bGrams.size)
+}
 
 function requireNonEmpty(value: string, label: string): string {
   const trimmed = value?.trim?.() ?? ''
@@ -172,6 +208,56 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
     })
   }
 
+  /**
+   * 音声で起床を証明する。録音を Workers AI (Whisper) で文字起こしし、
+   * 発火時に提示したフレーズと十分に一致していれば confirmed にする。
+   * 判定はサーバー側で行い、クライアントの自己申告は信用しない。
+   */
+  @callable()
+  async confirmAlarmByVoice(deviceId: string, alarmId: string, audio: number[]) {
+    const alarm = this.state.alarms[alarmId]
+    if (!alarm) {
+      throw new Error('アラームが見つかりません')
+    }
+    if (alarm.targetDeviceId !== deviceId) {
+      throw new Error('このアラームの対象者ではありません')
+    }
+    if (alarm.status !== 'fired') {
+      throw new Error('発火中のアラームだけ音声で確認できます')
+    }
+    if (!alarm.wakePhrase) {
+      throw new Error('確認フレーズが設定されていません')
+    }
+    if (!audio?.length) {
+      throw new Error('音声が録音できていません')
+    }
+
+    const result = (await this.env.AI.run('@cf/openai/whisper', {
+      audio
+    })) as { text?: string }
+    const heard = result?.text ?? ''
+    const score = similarity(normalizeForCompare(heard), normalizeForCompare(alarm.wakePhrase))
+
+    // 音声認識の揺れを見込んで完全一致は求めない
+    if (score < 0.6) {
+      return { ok: false as const, heard, score }
+    }
+
+    this.setState({
+      ...this.state,
+      alarms: {
+        ...this.state.alarms,
+        [alarmId]: {
+          ...alarm,
+          status: 'confirmed',
+          confirmedAt: new Date().toISOString(),
+          confirmedByVoice: true
+        }
+      }
+    })
+    return { ok: true as const, heard, score }
+  }
+
   @callable()
   cancelAlarm(deviceId: string, alarmId: string) {
     const actorId = requireNonEmpty(deviceId, '操作者')
@@ -205,11 +291,12 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
     if (!alarm || alarm.status !== 'scheduled') {
       return
     }
+    const wakePhrase = WAKE_PHRASES[Math.floor(Math.random() * WAKE_PHRASES.length)]
     this.setState({
       ...this.state,
       alarms: {
         ...this.state.alarms,
-        [payload.alarmId]: { ...alarm, status: 'fired' }
+        [payload.alarmId]: { ...alarm, status: 'fired', wakePhrase }
       }
     })
     await this.schedule(TIMEOUT_SECONDS, 'timeoutAlarm', { alarmId: payload.alarmId })
