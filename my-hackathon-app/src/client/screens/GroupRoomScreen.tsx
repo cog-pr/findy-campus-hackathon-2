@@ -26,7 +26,8 @@ const STATUS_LABEL: Record<Alarm['status'], string> = {
 
 export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingAction, onJoined, onLeave }: Props) {
   const [state, setState] = useState<GroupState>()
-  const [error, setError] = useState<string | null>(null)
+  const [fatalError, setFatalError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const didRun = useRef(false)
 
@@ -49,16 +50,16 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
         }
         onJoined()
       } catch (e) {
-        setError(e instanceof Error ? e.message : String(e))
+        setFatalError(e instanceof Error ? e.message : String(e))
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     })()
   }, [])
 
-  if (error) {
+  if (fatalError) {
     return (
       <div className="screen">
-        <p className="error">{error}</p>
+        <p className="error">{fatalError}</p>
         <button onClick={onLeave}>戻る</button>
       </div>
     )
@@ -77,7 +78,17 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
   return (
     <div className="screen">
       {myFiredAlarm && (
-        <AlarmOverlay alarm={myFiredAlarm} onConfirm={() => agent.stub.confirmAlarm(deviceId, myFiredAlarm.id)} />
+        <AlarmOverlay
+          alarm={myFiredAlarm}
+          onConfirm={async () => {
+            try {
+              setActionError(null)
+              await agent.stub.confirmAlarm(deviceId, myFiredAlarm.id)
+            } catch (e) {
+              setActionError(e instanceof Error ? e.message : String(e))
+            }
+          }}
+        />
       )}
 
       <div className="room-header">
@@ -89,6 +100,12 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
       <p>
         招待コード: <strong>{state.inviteCode}</strong>
       </p>
+
+      {actionError && (
+        <p className="error action-error" role="alert">
+          {actionError}
+        </p>
+      )}
 
       <h2>メンバー（{members.length}）</h2>
       <ul className="member-list">
@@ -112,6 +129,7 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
           myDeviceId={deviceId}
           onCancel={() => setShowForm(false)}
           onSubmit={async (targetDeviceId, fireAtIso, message) => {
+            setActionError(null)
             await agent.stub.createAlarm(deviceId, targetDeviceId, fireAtIso, message)
             setShowForm(false)
           }}
@@ -119,29 +137,36 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
       )}
       <ul className="alarm-list">
         {alarms.length === 0 && <li className="muted">まだアラームはありません</li>}
-        {alarms.map((a) => (
-          <li key={a.id} className={`alarm-item status-${a.status}`}>
-            <span className="alarm-time">{formatJst(a.fireAt)}</span>
-            <span className="alarm-target">→ {state.members[a.targetDeviceId]?.displayName ?? '?'}</span>
-            {a.message && <span className="alarm-message">「{a.message}」</span>}
-            <span className="alarm-status">{STATUS_LABEL[a.status]}</span>
-            {a.status === 'scheduled' &&
-              (a.creatorDeviceId === deviceId || a.targetDeviceId === deviceId) && (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await agent.stub.cancelAlarm(deviceId, a.id)
-                    } catch (e) {
-                      setError(e instanceof Error ? e.message : String(e))
-                    }
-                  }}
-                >
-                  取消
-                </button>
-              )}
-          </li>
-        ))}
+        {alarms.map((a) => {
+          const creatorName = state.members[a.creatorDeviceId]?.displayName ?? '?'
+          const targetName = state.members[a.targetDeviceId]?.displayName ?? '?'
+          return (
+            <li key={a.id} className={`alarm-item status-${a.status}`}>
+              <span className="alarm-time">{formatJst(a.fireAt)}</span>
+              <span className="alarm-who">
+                {creatorName} → {targetName}
+              </span>
+              {a.message && <span className="alarm-message">「{a.message}」</span>}
+              <span className="alarm-status">{STATUS_LABEL[a.status]}</span>
+              {a.status === 'scheduled' &&
+                (a.creatorDeviceId === deviceId || a.targetDeviceId === deviceId) && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        setActionError(null)
+                        await agent.stub.cancelAlarm(deviceId, a.id)
+                      } catch (e) {
+                        setActionError(e instanceof Error ? e.message : String(e))
+                      }
+                    }}
+                  >
+                    取消
+                  </button>
+                )}
+            </li>
+          )
+        })}
       </ul>
     </div>
   )

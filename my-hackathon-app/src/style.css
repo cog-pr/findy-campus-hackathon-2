@@ -151,6 +151,28 @@ button.primary {
   gap: 8px;
 }
 
+.quick-time-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.quick-time-label {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.alarm-who {
+  font-size: 0.9rem;
+}
+
+.action-error {
+  background: #ffebee;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
 .muted {
   color: #888;
   padding: 8px 0;
@@ -170,32 +192,47 @@ button.primary {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 20px;
   z-index: 1000;
-  animation: pulse 1s infinite;
+  animation: pulse 0.7s infinite;
   text-align: center;
   padding: 24px;
 }
 
+.alarm-overlay-kicker {
+  margin: 0;
+  letter-spacing: 0.2em;
+  font-weight: bold;
+  opacity: 0.9;
+  font-size: 1rem;
+}
+
 .alarm-overlay-title {
-  font-size: 2rem;
+  font-size: clamp(2rem, 8vw, 3rem);
   font-weight: bold;
   margin: 0;
 }
 
 .alarm-overlay-message {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   margin: 0;
 }
 
+.alarm-overlay-hint {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.95;
+}
+
 .wake-button {
-  font-size: 1.5rem;
-  padding: 20px 48px;
+  font-size: clamp(1.5rem, 5vw, 2rem);
+  padding: 24px 56px;
   border-radius: 999px;
-  border: none;
+  border: 4px solid #fff;
   background: #fff;
   color: #ff3b30;
   font-weight: bold;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 @keyframes pulse {
@@ -204,6 +241,6 @@ button.primary {
     background: #ff3b30;
   }
   50% {
-    background: #d32f2f;
+    background: #b71c1c;
   }
 }
