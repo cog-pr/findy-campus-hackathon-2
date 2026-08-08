@@ -1,9 +1,11 @@
 # デモ・ピッチ用メモ（実装に合わせた版）
 
-5分台本の全体: [`../docs/PITCH.md`](../docs/PITCH.md)
+5分台本の全体: [`../docs/PITCH.md`](../docs/PITCH.md)  
+スライド: [`../docs/slides/`](../docs/slides/)（[`index.html`](../docs/slides/index.html) でフルスクリーン発表）
 
 実装の正: **Cloudflare Agents（Durable Objects + `schedule` + `setState` のリアルタイム配信）**  
-今回やらない: Web Push / D1（仕様書 Won't）
+今回やらない: Web Push / D1（仕様書 Won't）  
+スライド `04-tech.png` は旧図（D1/Web Push）→ 口頭訂正。正は上の Agents スタック。
 
 ## 審査で言う技術の芯（30秒）
 
