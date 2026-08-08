@@ -50,40 +50,21 @@
       border-radius: 4px;
       font: inherit;
     }
-    #warn {
-      position: fixed;
-      right: 16px;
-      bottom: 14px;
-      max-width: min(420px, 46vw);
-      font-size: 12px;
-      line-height: 1.45;
-      padding: 8px 10px;
-      border-radius: 8px;
-      background: rgba(180, 60, 20, 0.88);
-      color: #fff;
-      opacity: 0;
-      transition: opacity 0.2s ease;
-      pointer-events: none;
-      z-index: 2;
-    }
-    #warn.show { opacity: 1; }
   </style>
 </head>
 <body>
   <div id="stage"><img id="slide" alt="WakeMate slide" /></div>
   <div id="hud">
-    <span id="counter">1 / 6</span>
+    <span id="counter">1 / 7</span>
     <span><kbd>←</kbd> <kbd>→</kbd> / <kbd>Space</kbd> · <kbd>Home</kbd>/<kbd>End</kbd> · <kbd>F</kbd> fullscreen</span>
-  </div>
-  <div id="warn">
-    04 技術図は旧案（D1 / Web Push）。口頭では Agents の schedule + setState。Push/D1 は言わない。
   </div>
   <script>
     const slides = [
+      { src: "00-title.png", title: "タイトル（TEAM）" },
       { src: "01-problem.png", title: "課題" },
       { src: "02-solution.png", title: "解決" },
       { src: "03-must-flow.png", title: "Must UI" },
-      { src: "04-tech.png", title: "技術（訂正あり）", warn: true },
+      { src: "04-tech.png", title: "技術" },
       { src: "05-scope.png", title: "スコープ" },
       { src: "06-brand.png", title: "締め" },
     ];
@@ -91,15 +72,13 @@
     let i = 0;
     const img = document.getElementById("slide");
     const counter = document.getElementById("counter");
-    const warn = document.getElementById("warn");
 
     function show(n) {
       i = Math.max(0, Math.min(slides.length - 1, n));
       const s = slides[i];
       img.src = s.src;
-      img.alt = `WakeMate ${String(i + 1).padStart(2, "0")} — ${s.title}`;
+      img.alt = `WakeMate ${String(i).padStart(2, "0")} — ${s.title}`;
       counter.textContent = `${i + 1} / ${slides.length}`;
-      warn.classList.toggle("show", !!s.warn);
       history.replaceState(null, "", `#${i + 1}`);
     }
 

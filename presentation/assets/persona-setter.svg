@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220" fill="none">
+  <rect width="320" height="220" rx="16" fill="#fff7f2"/>
+  <circle cx="100" cy="80" r="28" fill="#f2c4a0"/>
+  <path d="M78 68 Q100 48 122 68 L118 78 Q100 60 82 78 Z" fill="#1e293b"/>
+  <circle cx="90" cy="78" r="3" fill="#1e293b"/>
+  <circle cx="110" cy="78" r="3" fill="#1e293b"/>
+  <path d="M90 96 Q100 90 110 96" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <rect x="78" y="112" width="44" height="60" rx="16" fill="#ff4d1a"/>
+  <rect x="160" y="48" width="120" height="36" rx="12" fill="#fee2e2"/>
+  <text x="220" y="71" text-anchor="middle" fill="#be123c" font-family="Arial,sans-serif" font-size="14" font-weight="700">WAKE UP!</text>
+  <rect x="170" y="96" width="110" height="36" rx="12" fill="#e5e7eb"/>
+  <text x="225" y="119" text-anchor="middle" fill="#6b7280" font-family="Arial,sans-serif" font-size="12" font-weight="700">no reply...</text>
+  <circle cx="230" cy="170" r="28" stroke="#ff4d1a" stroke-width="4" fill="#fff"/>
+  <text x="230" y="180" text-anchor="middle" fill="#ff4d1a" font-family="Arial,sans-serif" font-size="28" font-weight="800">?</text>
+</svg>

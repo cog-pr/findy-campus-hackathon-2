@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 320" fill="none">
+  <rect width="980" height="320" rx="12" fill="#f3f5f8"/>
+  <rect x="20" y="40" width="200" height="240" rx="14" fill="#fff" stroke="#d5dbe6" stroke-width="2"/>
+  <text x="120" y="70" text-anchor="middle" fill="#5c6678" font-family="Consolas,monospace" font-size="14" font-weight="800">CLIENT</text>
+  <rect x="40" y="90" width="160" height="70" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+  <text x="120" y="120" text-anchor="middle" fill="#1d4ed8" font-family="Arial,sans-serif" font-size="18" font-weight="800">Browser</text>
+  <text x="120" y="142" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="12" font-weight="600">open via URL</text>
+  <rect x="40" y="180" width="160" height="70" rx="10" fill="#d4f5ee" stroke="#12b89a" stroke-width="2"/>
+  <text x="120" y="210" text-anchor="middle" fill="#0f766e" font-family="Arial,sans-serif" font-size="18" font-weight="800">Web Push</text>
+  <text x="120" y="232" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="12" font-weight="600">even tab closed</text>
+  <path d="M230 160 H270" stroke="#ff4d1a" stroke-width="4"/>
+  <polygon points="270,152 286,160 270,168" fill="#ff4d1a"/>
+  <rect x="300" y="30" width="660" height="260" rx="14" fill="#0a0e18"/>
+  <text x="330" y="60" fill="#94a3b8" font-family="Consolas,monospace" font-size="14" font-weight="800">CLOUDFLARE EDGE</text>
+  <rect x="330" y="80" width="140" height="90" rx="10" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+  <text x="400" y="120" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="18" font-weight="800">Workers</text>
+  <text x="400" y="145" text-anchor="middle" fill="#94a3b8" font-family="Arial,sans-serif" font-size="12" font-weight="600">API+UI deploy</text>
+  <rect x="500" y="70" width="200" height="110" rx="12" fill="#fff7ed" stroke="#ff4d1a" stroke-width="4"/>
+  <text x="600" y="105" text-anchor="middle" fill="#c2410c" font-family="Consolas,monospace" font-size="12" font-weight="800">* HERO *</text>
+  <text x="600" y="135" text-anchor="middle" fill="#9a3412" font-family="Arial,sans-serif" font-size="22" font-weight="800">DO Alarms</text>
+  <text x="600" y="160" text-anchor="middle" fill="#9a3412" font-family="Arial,sans-serif" font-size="13" font-weight="700">server keeps morning</text>
+  <rect x="730" y="80" width="140" height="90" rx="10" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+  <text x="800" y="120" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="18" font-weight="800">D1</text>
+  <text x="800" y="145" text-anchor="middle" fill="#94a3b8" font-family="Arial,sans-serif" font-size="12" font-weight="600">state in SQL</text>
+  <rect x="330" y="210" width="600" height="50" rx="10" fill="#1e293b"/>
+  <text x="630" y="242" text-anchor="middle" fill="#e2e8f0" font-family="Consolas,monospace" font-size="15" font-weight="700">create - setAlarm - fire/D1 - Push - confirm</text>
+</svg>

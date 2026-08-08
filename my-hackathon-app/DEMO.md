@@ -3,6 +3,9 @@
 5分台本の全体: [`../docs/PITCH.md`](../docs/PITCH.md)  
 スライド: [`../docs/slides/`](../docs/slides/)（[`index.html`](../docs/slides/index.html) でフルスクリーン発表）
 
+**公開 URL（固定）**: `https://findy-campus-hackathon-2.trco0430.workers.dev`  
+（Worker `name` = `findy-campus-hackathon-2` / まを のアカウント。別アカウントへデプロイしない）
+
 実装の正: **Cloudflare Agents（Durable Objects + `schedule` + `setState` のリアルタイム配信）**  
 今回やらない: Web Push / D1（仕様書 Won't）  
 スライド `04-tech.png` は旧図（D1/Web Push）→ 口頭訂正。正は上の Agents スタック。

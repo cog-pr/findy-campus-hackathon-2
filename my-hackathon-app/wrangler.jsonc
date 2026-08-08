@@ -1,6 +1,9 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "findy-hackathon-app",
+  // Fixed public URL (まを's account): https://findy-campus-hackathon-2.trco0430.workers.dev
+  // Do NOT rename — workers.dev subdomain is derived from this `name`.
+  // Do NOT deploy from another Cloudflare account (would create a different *.workers.dev URL).
+  "name": "findy-campus-hackathon-2",
   "main": "src/index.tsx",
   "compatibility_date": "2026-06-14",
   "compatibility_flags": ["nodejs_compat"],

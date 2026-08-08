@@ -33,7 +33,9 @@ npm run dev
 - `npm run deploy` — Cloudflareへデプロイ（要 `npx wrangler login`）
 - `npm run cf-typegen` — `wrangler.jsonc` 変更後の型再生成
 
-> デプロイ前に `wrangler.jsonc` の `name`（= 公開URLの名前になる）を自分のアプリ名に変えるのがおすすめです。
+> **公開 URL（固定）**: `https://findy-campus-hackathon-2.trco0430.workers.dev`  
+> `wrangler.jsonc` の `name` は `findy-campus-hackathon-2` のままにする（変更すると別URLになる）。  
+> 本番デプロイは まを の Cloudflare アカウント（`trco0430`）から行う。別アカウントで `wrangler deploy` しないこと。
 
 ### エージェント用スキル（`npm run setup:skills` で取得）
 

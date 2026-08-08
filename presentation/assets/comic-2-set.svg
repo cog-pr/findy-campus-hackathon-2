@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 300" fill="none">
+  <rect width="280" height="300" fill="#0f172a"/>
+  <circle cx="80" cy="90" r="26" fill="#f2c4a0"/>
+  <rect x="62" y="120" width="36" height="50" rx="14" fill="#ff4d1a"/>
+  <path d="M62 70 Q80 52 98 70" fill="#1e293b"/>
+  <rect x="120" y="60" width="130" height="140" rx="12" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+  <text x="135" y="90" fill="#94a3b8" font-family="Arial,sans-serif" font-size="12" font-weight="700">To</text>
+  <text x="135" y="112" fill="#ffb199" font-family="Arial,sans-serif" font-size="18" font-weight="800">Wakee</text>
+  <text x="135" y="145" fill="#fff" font-family="Consolas,monospace" font-size="28" font-weight="800">07:00</text>
+  <text x="135" y="175" fill="#cbd5e1" font-family="Arial,sans-serif" font-size="12" font-weight="600">don't be late</text>
+  <rect x="140" y="188" width="90" height="28" rx="6" fill="#ff4d1a"/>
+  <text x="185" y="207" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="13" font-weight="800">CREATE</text>
+  <text x="140" y="250" text-anchor="middle" fill="#94a3b8" font-family="Arial,sans-serif" font-size="15" font-weight="700">other sets time</text>
+</svg>
