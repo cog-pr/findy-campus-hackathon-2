@@ -6,7 +6,7 @@ Cloudflare Workers 上でグループ招待・ワンショットアラーム・�
 
 ## 公開 URL
 
-https://wakemate.0908rikutti.workers.dev
+https://findy-campus-hackathon-2.trco0430.workers.dev
 
 `wrangler.jsonc` の `name` は `wakemate`（Workers の公開サブドメイン名）。
 

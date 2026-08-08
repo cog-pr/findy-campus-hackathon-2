@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WakeMate — Pitch Slides</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: #0b1220;
+      color: #e8eef8;
+      font-family: "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      overflow: hidden;
+    }
+    #stage {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: #0b1220;
+    }
+    #stage img {
+      max-width: 100vw;
+      max-height: 100vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    #hud {
+      position: fixed;
+      left: 16px;
+      bottom: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+      opacity: 0.72;
+      pointer-events: none;
+      z-index: 2;
+    }
+    #hud kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: 4px;
+      font: inherit;
+    }
+    #warn {
+      position: fixed;
+      right: 16px;
+      bottom: 14px;
+      max-width: min(420px, 46vw);
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(180, 60, 20, 0.88);
+      color: #fff;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      z-index: 2;
+    }
+    #warn.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="stage"><img id="slide" alt="WakeMate slide" /></div>
+  <div id="hud">
+    <span id="counter">1 / 6</span>
+    <span><kbd>←</kbd> <kbd>→</kbd> / <kbd>Space</kbd> · <kbd>Home</kbd>/<kbd>End</kbd> · <kbd>F</kbd> fullscreen</span>
+  </div>
+  <div id="warn">
+    04 技術図は旧案（D1 / Web Push）。口頭では Agents の schedule + setState。Push/D1 は言わない。
+  </div>
+  <script>
+    const slides = [
+      { src: "01-problem.png", title: "課題" },
+      { src: "02-solution.png", title: "解決" },
+      { src: "03-must-flow.png", title: "Must UI" },
+      { src: "04-tech.png", title: "技術（訂正あり）", warn: true },
+      { src: "05-scope.png", title: "スコープ" },
+      { src: "06-brand.png", title: "締め" },
+    ];
+
+    let i = 0;
+    const img = document.getElementById("slide");
+    const counter = document.getElementById("counter");
+    const warn = document.getElementById("warn");
+
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      const s = slides[i];
+      img.src = s.src;
+      img.alt = `WakeMate ${String(i + 1).padStart(2, "0")} — ${s.title}`;
+      counter.textContent = `${i + 1} / ${slides.length}`;
+      warn.classList.toggle("show", !!s.warn);
+      history.replaceState(null, "", `#${i + 1}`);
+    }
+
+    function fromHash() {
+      const m = location.hash.match(/^#(\d+)$/);
+      return m ? Number(m[1]) - 1 : 0;
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
+        show(i + 1);
+      } else if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
+        show(i - 1);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        show(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        show(slides.length - 1);
+      } else if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+      }
+    });
+
+    window.addEventListener("hashchange", () => show(fromHash()));
+    show(fromHash());
+  </script>
+</body>
+</html>
