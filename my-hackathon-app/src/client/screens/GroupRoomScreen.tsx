@@ -125,6 +125,21 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
             <span className="alarm-target">→ {state.members[a.targetDeviceId]?.displayName ?? '?'}</span>
             {a.message && <span className="alarm-message">「{a.message}」</span>}
             <span className="alarm-status">{STATUS_LABEL[a.status]}</span>
+            {a.status === 'scheduled' &&
+              (a.creatorDeviceId === deviceId || a.targetDeviceId === deviceId) && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await agent.stub.cancelAlarm(deviceId, a.id)
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : String(e))
+                    }
+                  }}
+                >
+                  取消
+                </button>
+              )}
           </li>
         ))}
       </ul>
