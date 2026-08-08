@@ -43,6 +43,7 @@ export function GroupRoomScreen({
   const [fatalError, setFatalError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
+  const [codeCopied, setCodeCopied] = useState(false)
   const didRun = useRef(false)
 
   const agent = useAgent<GroupAgent, GroupState>({
@@ -129,8 +130,23 @@ export function GroupRoomScreen({
           グループを出る
         </button>
       </div>
-      <p>
+      <p className="invite-code-row">
         招待コード: <strong>{state.inviteCode}</strong>
+        <button
+          type="button"
+          className="copy-button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(state.inviteCode)
+              setCodeCopied(true)
+              setTimeout(() => setCodeCopied(false), 2000)
+            } catch (e) {
+              setActionError(e instanceof Error ? e.message : String(e))
+            }
+          }}
+        >
+          {codeCopied ? 'コピーしました' : 'コピー'}
+        </button>
       </p>
 
       {waitingForWake.map((a) => {
