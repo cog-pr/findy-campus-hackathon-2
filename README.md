@@ -41,6 +41,50 @@ Findy Campus Hackathon #2（2026/8/8）の成果物。
 
 ベースは [hono-agents-starter](https://github.com/yusukebe/hono-agents-starter)（Hono + Vite + React + Cloudflare Agents SDK）。**追加のデータベースも通知サービスも使っていません。**
 
+### 使用技術一覧
+
+| 分類 | 技術 | バージョン | 用途 |
+|---|---|---|---|
+| 言語 | **TypeScript** | ESNext / strict | フロント・バックエンドとも全面採用 |
+| 実行環境 | **Cloudflare Workers** | 互換性日付 `2026-06-14`<br>`nodejs_compat` | サーバーサイドの実行基盤 |
+| Webフレームワーク | **[Hono](https://hono.dev/)** | 4.12 | ルーティング、SSRの配信 |
+| UIライブラリ | **React** | 19.2 | 画面の構築（SPA + SSRエントリ） |
+| ビルドツール | **Vite** | 8.2 | 開発サーバー、本番ビルド |
+| ステートフル基盤 | **[Cloudflare Agents SDK](https://developers.cloudflare.com/agents/)**（`agents`） | 0.20 | Durable Objects のラッパー。状態管理・スケジュール・RPC |
+| Hono連携 | `hono-agents` | 3.0 | HonoにAgents SDKをミドルウェアとしてマウント |
+| 永続化 | **Durable Objects**（内蔵SQLite） | — | グループ・メンバー・アラームの状態。外部DBなし |
+| スケジューラ | **Durable Object Alarms** | — | アラーム発火時刻のサーバー側管理 |
+| リアルタイム通信 | **WebSocket**（Agents SDKが内包） | — | 状態変更の自動配信。自前実装なし |
+| AI | **Workers AI** `@cf/openai/whisper` | — | 起床確認の音声を文字起こし |
+| SSR補助 | `vite-ssr-components` | 0.6 | SSR時のスクリプト/スタイル注入 |
+| CLI / デプロイ | **Wrangler** | 4.x | 型生成、デプロイ |
+| CI/CD | **Cloudflare Workers Builds** | — | mainへのマージで自動ビルド・デプロイ |
+
+### 使用しているブラウザAPI
+
+音声確認とアラーム体験のために、ライブラリを足さず標準APIだけで実装しています。
+
+| API | 用途 |
+|---|---|
+| `MediaRecorder` / `navigator.mediaDevices` | 起床確認の音声録音 |
+| `AudioContext`（Web Audio API） | アラーム音の生成・ループ再生 |
+| `navigator.vibrate` | 発火時の端末バイブレーション |
+| `navigator.clipboard` | 招待コードのコピー |
+| `localStorage` | `deviceId` / ニックネーム / 参加中グループの保持 |
+| `crypto.randomUUID` | `deviceId`・アラームIDの生成 |
+
+### 意図的に使っていないもの
+
+| 技術 | 理由 |
+|---|---|
+| **D1 / KV などのデータベース** | グループ単位で状態が完結し、グループ横断の検索が不要なため。Durable Objects の `state` だけで足りる |
+| **Web Push（VAPID）** | 実装工数とデモでの伝わりにくさ。WebSocketによるリアルタイム配信で代替した |
+| **認証基盤（OAuth等）** | ハッカソンのスコープ外。`deviceId` をクライアント生成して localStorage に保持するのみ |
+| **状態管理ライブラリ（Redux等）** | Agents SDK の `useAgent` が状態の購読と同期を担うため不要 |
+| **CSSフレームワーク** | 画面数が少なく、素のCSSで十分だったため |
+
+### レイヤごとの選定意図
+
 | 層 | 使ったもの | 選定の意図 |
 |---|---|---|
 | 入口 | **Hono** on Cloudflare Workers | APIとUIを1デプロイで配信。`hono-agents` の `agentsMiddleware` でAgents SDKをマウント |
