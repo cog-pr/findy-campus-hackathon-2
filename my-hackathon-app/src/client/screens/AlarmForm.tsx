@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react'
-import { jstLocalToIso } from '../lib/jst'
+import { useMemo, useState, type FormEvent } from 'react'
+import { jstDatetimeLocalAfterMinutes, jstLocalToIso } from '../lib/jst'
 
 type Props = {
   members: [string, { displayName: string }][]
@@ -9,16 +9,28 @@ type Props = {
 }
 
 export function AlarmForm({ members, myDeviceId, onCancel, onSubmit }: Props) {
-  const [targetDeviceId, setTargetDeviceId] = useState(members[0]?.[0] ?? '')
+  const others = useMemo(() => members.filter(([id]) => id !== myDeviceId), [members, myDeviceId])
+  const defaultTarget = others[0]?.[0] ?? members[0]?.[0] ?? ''
+
+  const [targetDeviceId, setTargetDeviceId] = useState(defaultTarget)
   const [datetimeLocal, setDatetimeLocal] = useState('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  function applyQuickMinutes(minutes: number) {
+    setDatetimeLocal(jstDatetimeLocalAfterMinutes(minutes))
+    setError(null)
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!targetDeviceId || !datetimeLocal) {
       setError('対象と日時を入力してください')
+      return
+    }
+    if (others.length === 0) {
+      setError('相手が参加してからアラームを作成してください')
       return
     }
     const fireAtIso = jstLocalToIso(datetimeLocal)
@@ -41,11 +53,15 @@ export function AlarmForm({ members, myDeviceId, onCancel, onSubmit }: Props) {
     <form onSubmit={handleSubmit} className="alarm-form">
       <label>
         対象
-        <select value={targetDeviceId} onChange={(e) => setTargetDeviceId(e.target.value)}>
-          {members.map(([id, m]) => (
+        <select
+          value={targetDeviceId}
+          onChange={(e) => setTargetDeviceId(e.target.value)}
+          disabled={others.length === 0}
+        >
+          {others.length === 0 && <option value="">（相手の参加待ち）</option>}
+          {others.map(([id, m]) => (
             <option key={id} value={id}>
               {m.displayName}
-              {id === myDeviceId ? '（自分）' : ''}
             </option>
           ))}
         </select>
@@ -59,13 +75,22 @@ export function AlarmForm({ members, myDeviceId, onCancel, onSubmit }: Props) {
           required
         />
       </label>
+      <div className="quick-time-row">
+        <span className="quick-time-label">デモ用</span>
+        <button type="button" disabled={submitting} onClick={() => applyQuickMinutes(1)}>
+          1分後
+        </button>
+        <button type="button" disabled={submitting} onClick={() => applyQuickMinutes(3)}>
+          3分後
+        </button>
+      </div>
       <label>
         メッセージ（任意）
         <input value={message} onChange={(e) => setMessage(e.target.value)} maxLength={100} />
       </label>
       {error && <p className="error">{error}</p>}
       <div className="alarm-form-actions">
-        <button type="submit" className="primary" disabled={submitting}>
+        <button type="submit" className="primary" disabled={submitting || others.length === 0}>
           作成
         </button>
         <button type="button" onClick={onCancel} disabled={submitting}>
