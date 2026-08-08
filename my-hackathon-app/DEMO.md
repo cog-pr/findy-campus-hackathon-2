@@ -1,7 +1,8 @@
 # デモ・ピッチ用メモ（実装に合わせた版）
 
 5分台本の全体: [`../docs/PITCH.md`](../docs/PITCH.md)  
-スライド: [`../docs/slides/`](../docs/slides/)（[`index.html`](../docs/slides/index.html) でフルスクリーン発表）
+スライド: [`../docs/slides/`](../docs/slides/)（[`index.html`](../docs/slides/index.html) でフルスクリーン発表）  
+公開 URL: **https://findy-campus-hackathon-2.trco0430.workers.dev**（起動手順の正は [`README.md`](./README.md)）
 
 **公開 URL（固定）**: `https://findy-campus-hackathon-2.trco0430.workers.dev`  
 （Worker `name` = `findy-campus-hackathon-2` / まを のアカウント。別アカウントへデプロイしない）

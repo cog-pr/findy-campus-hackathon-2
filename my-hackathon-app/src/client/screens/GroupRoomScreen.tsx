@@ -190,6 +190,9 @@ export function GroupRoomScreen({
                 setActionError(e instanceof Error ? e.message : String(e))
               }
             }}
+            onVoiceConfirm={(audio) =>
+              agent.stub.confirmAlarmByVoice(deviceId, myFiredAlarm.id, audio)
+            }
           />
         )}
 

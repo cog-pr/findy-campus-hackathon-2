@@ -7,13 +7,17 @@ import {
   stopAlarmVibration,
   unlockAlarmAudio
 } from '../lib/alarmAudio'
-import { createWakeVoiceListener, isWakeVoiceSupported } from '../lib/alarmVoice'
+
+type VoiceResult = { ok: boolean; heard: string; score: number }
 
 type Props = {
   alarm: Alarm
   fromName?: string
   onConfirm: () => void | Promise<void>
+  onVoiceConfirm: (audio: number[]) => Promise<VoiceResult>
 }
+
+const RECORD_MS = 4000
 
 function formatFireTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('ja-JP', {
@@ -23,14 +27,39 @@ function formatFireTime(iso: string): string {
   })
 }
 
-export function AlarmOverlay({ alarm, fromName, onConfirm }: Props) {
+async function recordAudio(ms: number): Promise<number[]> {
+  let stream: MediaStream
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+  } catch {
+    throw new Error('マイクを使用できません。ボタンで確認してください')
+  }
+  try {
+    const chunks: BlobPart[] = []
+    const recorder = new MediaRecorder(stream)
+    const done = new Promise<void>((resolve, reject) => {
+      recorder.ondataavailable = (e) => chunks.push(e.data)
+      recorder.onstop = () => resolve()
+      recorder.onerror = () => reject(new Error('録音に失敗しました'))
+    })
+    recorder.start()
+    await new Promise((r) => setTimeout(r, ms))
+    if (recorder.state !== 'inactive') recorder.stop()
+    await done
+    const buffer = await new Blob(chunks).arrayBuffer()
+    return Array.from(new Uint8Array(buffer))
+  } finally {
+    stream.getTracks().forEach((t) => t.stop())
+  }
+}
+
+export function AlarmOverlay({ alarm, fromName, onConfirm, onVoiceConfirm }: Props) {
   const confirmingRef = useRef(false)
   const onConfirmRef = useRef(onConfirm)
   const confirmRef = useRef<() => Promise<void>>(async () => undefined)
   onConfirmRef.current = onConfirm
-  const [voiceStatus, setVoiceStatus] = useState<'listening' | 'denied' | 'unavailable' | null>(
-    isWakeVoiceSupported() ? null : 'unavailable'
-  )
+  const [phase, setPhase] = useState<'idle' | 'recording' | 'judging'>('idle')
+  const [feedback, setFeedback] = useState<string | null>(null)
 
   useEffect(() => {
     confirmingRef.current = false
@@ -53,51 +82,37 @@ export function AlarmOverlay({ alarm, fromName, onConfirm }: Props) {
     void unlockAlarmAudio().then(() => startAlarmSound())
     startAlarmVibration()
 
-    const voice = createWakeVoiceListener({
-      onWake: () => {
-        void confirm()
-      },
-      onStatus: setVoiceStatus
-    })
-
-    if (voice.supported) {
-      voice.start()
-    }
-
     return () => {
-      voice.stop()
       stopAlarmSound()
       stopAlarmVibration()
     }
   }, [])
 
-  const voiceUi =
-    voiceStatus === 'listening'
-      ? {
-          className: 'voice-pill listening',
-          label: '音声認識中',
-          hint: '「起きた」と話しかけても解除できます'
-        }
-      : voiceStatus === 'denied'
-        ? {
-            className: 'voice-pill denied',
-            label: 'マイク拒否',
-            hint: 'マイクが拒否されました。下のボタンで解除してください'
-          }
-        : voiceStatus === 'unavailable'
-          ? {
-              className: 'voice-pill unavailable',
-              label: '音声非対応',
-              hint: 'この端末では音声解除非対応。ボタンで解除してください'
-            }
-          : voiceStatus === null
-            ? {
-                className: 'voice-pill starting',
-                label: 'マイク準備中',
-                hint: '音声解除の準備中です…'
-              }
-            : null
+  async function handleVoice() {
+    setFeedback(null)
+    try {
+      setPhase('recording')
+      stopAlarmSound()
+      const audio = await recordAudio(RECORD_MS)
+      setPhase('judging')
+      const result = await onVoiceConfirm(audio)
+      if (!result.ok) {
+        setFeedback(
+          result.heard
+            ? `「${result.heard}」と聞こえました。もう一度はっきり読んでください`
+            : '聞き取れませんでした。もう一度読んでください'
+        )
+        void startAlarmSound()
+      }
+    } catch (e) {
+      setFeedback(e instanceof Error ? e.message : String(e))
+      void startAlarmSound()
+    } finally {
+      setPhase('idle')
+    }
+  }
 
+  const busy = phase !== 'idle'
   const fireTime = formatFireTime(alarm.fireAt)
 
   return (
@@ -107,21 +122,28 @@ export function AlarmOverlay({ alarm, fromName, onConfirm }: Props) {
       <p className="alarm-overlay-clock">{fireTime}</p>
       <p className="alarm-overlay-title">起きる時間です！</p>
       {alarm.message && <p className="alarm-overlay-message">{alarm.message}</p>}
-      <p className="alarm-overlay-hint">音が出なくてもこの赤い画面＝発火中</p>
 
-      {voiceUi && (
-        <div className="voice-status-block" aria-live="polite">
-          <span className={voiceUi.className}>
-            {voiceStatus === 'listening' && <span className="voice-dot" aria-hidden="true" />}
-            {voiceUi.label}
-          </span>
-          <p className="alarm-overlay-voice-hint">{voiceUi.hint}</p>
+      {alarm.wakePhrase && (
+        <div className="voice-check">
+          <p className="voice-check-label">声に出して読むと起床が認められます</p>
+          <p className="voice-check-phrase">{alarm.wakePhrase}</p>
+          <button className="wake-button" type="button" onClick={() => void handleVoice()} disabled={busy}>
+            {phase === 'recording' ? '録音中…' : phase === 'judging' ? '判定中…' : '🎤 読み上げる'}
+          </button>
+          {feedback && <p className="voice-check-feedback">{feedback}</p>}
         </div>
       )}
 
-      <button className="wake-button" type="button" onClick={() => void confirmRef.current()}>
+      <p className="alarm-overlay-hint">音が出なくてもこの赤い画面＝発火中</p>
+
+      <button
+        className="wake-button secondary"
+        type="button"
+        onClick={() => void confirmRef.current()}
+        disabled={busy}
+      >
         <span className="wm-icon wm-icon-sun wake-button-icon" aria-hidden="true" />
-        起きた！
+        起きた！（ボタンで確認）
       </button>
     </div>
   )
