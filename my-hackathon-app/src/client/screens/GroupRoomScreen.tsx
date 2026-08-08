@@ -14,6 +14,8 @@ type Props = {
   pendingAction: PendingAction
   onJoined: () => void
   onLeave: () => void
+  /** 招待コード衝突時。true なら新しいコードで再マウントされる */
+  onCollisionRetry?: () => boolean
 }
 
 const STATUS_LABEL: Record<Alarm['status'], string> = {
@@ -24,7 +26,19 @@ const STATUS_LABEL: Record<Alarm['status'], string> = {
   cancelled: '取消'
 }
 
-export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingAction, onJoined, onLeave }: Props) {
+function isInviteCollisionError(message: string): boolean {
+  return /既に作成|already\s*(exists|created)|already\s*initialized/i.test(message)
+}
+
+export function GroupRoomScreen({
+  inviteCode,
+  deviceId,
+  displayName,
+  pendingAction,
+  onJoined,
+  onLeave,
+  onCollisionRetry
+}: Props) {
   const [state, setState] = useState<GroupState>()
   const [fatalError, setFatalError] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
@@ -50,7 +64,19 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
         }
         onJoined()
       } catch (e) {
-        setFatalError(e instanceof Error ? e.message : String(e))
+        const message = e instanceof Error ? e.message : String(e)
+        if (
+          pendingAction.type === 'create' &&
+          isInviteCollisionError(message) &&
+          onCollisionRetry?.()
+        ) {
+          return
+        }
+        if (pendingAction.type === 'create' && isInviteCollisionError(message)) {
+          setFatalError('招待コードの空きが見つかりませんでした。もう一度作成してください。')
+          return
+        }
+        setFatalError(message)
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     })()
@@ -71,6 +97,12 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
 
   const myFiredAlarm = Object.values(state.alarms).find(
     (a) => a.targetDeviceId === deviceId && a.status === 'fired'
+  )
+  const waitingForWake = Object.values(state.alarms).filter(
+    (a) => a.creatorDeviceId === deviceId && a.targetDeviceId !== deviceId && a.status === 'fired'
+  )
+  const timedOutMine = Object.values(state.alarms).filter(
+    (a) => a.creatorDeviceId === deviceId && a.status === 'timed_out'
   )
   const members = Object.entries(state.members)
   const alarms = Object.values(state.alarms).sort((a, b) => a.fireAt.localeCompare(b.fireAt))
@@ -100,6 +132,28 @@ export function GroupRoomScreen({ inviteCode, deviceId, displayName, pendingActi
       <p>
         招待コード: <strong>{state.inviteCode}</strong>
       </p>
+
+      {waitingForWake.map((a) => {
+        const targetName = state.members[a.targetDeviceId]?.displayName ?? '相手'
+        return (
+          <div key={a.id} className="status-banner waiting" role="status">
+            <strong>{targetName}さんの起床待ち</strong>
+            <span>警報を届けました。確認されるまで待機中です。</span>
+            {a.message && <span className="status-banner-message">「{a.message}」</span>}
+          </div>
+        )
+      })}
+
+      {timedOutMine.map((a) => {
+        const targetName = state.members[a.targetDeviceId]?.displayName ?? '相手'
+        return (
+          <div key={a.id} className="status-banner timed-out" role="alert">
+            <strong>{targetName}さんが未確認のままです</strong>
+            <span>制限時間内に「起きた！」が届きませんでした。</span>
+            {a.message && <span className="status-banner-message">「{a.message}」</span>}
+          </div>
+        )
+      })}
 
       {actionError && (
         <p className="error action-error" role="alert">
