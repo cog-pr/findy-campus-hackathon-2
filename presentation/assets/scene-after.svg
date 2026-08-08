@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 280" fill="none">
+  <rect width="400" height="280" rx="16" fill="#ecfdf8"/>
+  <circle cx="80" cy="100" r="24" fill="#f2c4a0"/>
+  <rect x="62" y="128" width="36" height="48" rx="14" fill="#ff4d1a"/>
+  <rect x="120" y="90" width="40" height="64" rx="6" fill="#0a0e18" stroke="#ff4d1a" stroke-width="2"/>
+  <rect x="126" y="100" width="28" height="20" rx="3" fill="#ff4d1a"/>
+  <path d="M168 120 H210" stroke="#12b89a" stroke-width="4" stroke-dasharray="6 4"/>
+  <polygon points="210,112 226,120 210,128" fill="#12b89a"/>
+  <rect x="240" y="70" width="56" height="90" rx="10" fill="#0a0e18" stroke="#12b89a" stroke-width="3"/>
+  <circle cx="268" cy="100" r="14" fill="#12b89a"/>
+  <path d="M255 55 Q268 40 281 55" stroke="#12b89a" stroke-width="3" fill="none"/>
+  <path d="M248 48 Q268 28 288 48" stroke="#12b89a" stroke-width="2" fill="none" opacity=".5"/>
+  <circle cx="320" cy="150" r="26" fill="#f2c4a0"/>
+  <rect x="302" y="180" width="36" height="40" rx="12" fill="#3b82f6"/>
+  <path d="M308 148 Q320 158 332 148" stroke="#1e293b" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <circle cx="312" cy="146" r="2.5" fill="#1e293b"/>
+  <circle cx="328" cy="146" r="2.5" fill="#1e293b"/>
+  <rect x="200" y="210" width="140" height="36" rx="10" fill="#12b89a"/>
+  <text x="270" y="234" text-anchor="middle" fill="#04201a" font-family="Arial,sans-serif" font-size="16" font-weight="800">I'M UP!</text>
+  <text x="100" y="210" text-anchor="middle" fill="#0f766e" font-family="Arial,sans-serif" font-size="14" font-weight="800">other sets</text>
+  <text x="100" y="232" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="12" font-weight="600">+ confirm</text>
+</svg>

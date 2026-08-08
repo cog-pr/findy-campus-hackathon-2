@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { EntryScreen } from './screens/EntryScreen'
 import { GroupRoomScreen, type PendingAction } from './screens/GroupRoomScreen'
+import { installAlarmAudioUnlock } from './lib/alarmAudio'
 import {
   clearCurrentInviteCode,
   generateInviteCode,
@@ -18,6 +19,9 @@ function App() {
   const [displayName, setDisplayName] = useState(getDisplayName())
   const [pendingAction, setPendingAction] = useState<PendingAction>(null)
   const createAttemptsRef = useRef(0)
+
+  // Unlock Web Audio on first gesture so alarm can ring later on mobile Safari/Chrome
+  useEffect(() => installAlarmAudioUnlock(), [])
 
   if (!inviteCode) {
     return (

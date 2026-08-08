@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 300" fill="none">
+  <rect width="280" height="300" fill="#0f172a"/>
+  <rect x="36" y="70" width="70" height="120" rx="10" fill="#1e293b" stroke="#ff4d1a" stroke-width="3"/>
+  <rect x="174" y="70" width="70" height="120" rx="10" fill="#1e293b" stroke="#12b89a" stroke-width="3"/>
+  <text x="71" y="130" text-anchor="middle" fill="#ffb199" font-family="Arial,sans-serif" font-size="12" font-weight="800">Setter</text>
+  <text x="209" y="130" text-anchor="middle" fill="#8ef0d8" font-family="Arial,sans-serif" font-size="12" font-weight="800">Wakee</text>
+  <rect x="70" y="160" width="140" height="44" rx="10" fill="#ff4d1a"/>
+  <text x="140" y="188" text-anchor="middle" fill="#fff" font-family="Consolas,monospace" font-size="22" font-weight="800">A7K2QM</text>
+  <path d="M106 110 H174" stroke="#fff" stroke-width="3" stroke-dasharray="5 4" opacity=".6"/>
+  <circle cx="140" cy="110" r="10" fill="#12b89a"/>
+  <text x="140" y="250" text-anchor="middle" fill="#94a3b8" font-family="Arial,sans-serif" font-size="15" font-weight="700">join with code</text>
+</svg>

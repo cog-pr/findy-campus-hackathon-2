@@ -69,8 +69,9 @@ metadata:
    `agents-sdk` / `durable-objects` が導入される。このスキルが読めているなら導入済みなので案内は不要。
    入れ直したいときも同じコマンドでよい。
 
-3. あとは作りたいものに合わせて「3. やりたい形」を参照しながら進める。デプロイ前に `wrangler.jsonc` の
-   `name` を自分のアプリ名に変えるよう促す（公開URLの名前になる）。
+3. あとは作りたいものに合わせて「3. やりたい形」を参照しながら進める。
+   このリポジトリの公開 URL は固定: `https://findy-campus-hackathon-2.trco0430.workers.dev`
+   （`wrangler.jsonc` の `name` は `findy-campus-hackathon-2` のまま。別アカウントへデプロイしない）。
 
 > 追加のスキルが必要になったら `npx skills add` で後から足せる
 > （例: `npx skills add cloudflare/skills --skill sandbox-sdk`）。
