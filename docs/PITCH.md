@@ -6,7 +6,7 @@
 言わない: D1 保存・Web Push（仕様 Won't / 未実装）。  
 ※ `04-tech.png` の図は旧案（D1/Web Push）→ 口頭で訂正するか差し替え。詳細は [`slides/README.md`](./slides/README.md)。
 
-合計 **5:00**（±15秒）。公開 URL はデプロイ後に差し替え（#7）。
+合計 **5:00**（±15秒）。公開 URL: **https://findy-campus-hackathon-2.trco0430.workers.dev**
 
 | 時間 | 軸 | スライド | 残す一言 |
 |------|----|----------|----------|
@@ -38,7 +38,7 @@
 3. 発火: 対象にフルスクリーン警報 / 作成者に「起床待ち」バナー  
 4. 「起きた！」→ 起床済み。無視すると未確認バナー  
 
-**必ず言う**: Cloudflare Workers の公開 URL（未公開なら正直に「デプロイ中」）。  
+**必ず言う**: 公開 URL `https://findy-campus-hackathon-2.trco0430.workers.dev`。  
 前提: **両方タブを開いておく**（Push なし）。
 
 ## 3:00–4:20　③ 技術
