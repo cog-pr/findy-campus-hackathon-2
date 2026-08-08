@@ -1,82 +1,63 @@
-# Findy Campus Hackathon #2 — 全部入りスターター
+# WakeMate — アプリ本体
 
-[Findy Campus Hackathon #2](https://www.craftstadium.com/hackathon/findy-campus-hackathon-202608)（2026/8/8開催）の参加者向けスターターです。アプリの雛形と、コーディングエージェント用のスキルが最初から全部入っています。
+プロジェクトの概要・技術スタック・アーキテクチャは **[リポジトリ直下の README](../README.md)** を見てください。ここには開発時に必要な操作だけをまとめています。
 
-## 始め方
+**公開URL**: https://findy-campus-hackathon-2.trco0430.workers.dev
 
-```sh
-npx degit yusukebe/findy-campus-hackathon-02 my-hackathon-app
-cd my-hackathon-app && npm install
-```
+---
 
-コーディングエージェントを使うなら、スキル一式を入れます（1コマンド）。
+## コマンド
 
 ```sh
-npm run setup:skills
+npm install
+npm run dev        # ローカル開発サーバー
+npm run build      # 本番ビルド
+npm run cf-typegen # wrangler.jsonc を変更したあとの型再生成
+npm run deploy     # 手動デプロイ（通常は不要。下記参照）
 ```
 
-ローカルで動かすには：
+`npm run dev` で表示されるURLを開きます。2人分を試すときは、シークレットウィンドウか別のブラウザプロファイルを使ってください（`deviceId` を localStorage に持つため、同じウィンドウの別タブでは同一人物になります）。
 
-```sh
-npm run dev
+---
+
+## デプロイ
+
+**mainにマージすれば Cloudflare Workers Builds が自動でビルド・デプロイします。** 手動デプロイは基本不要です。
+
+手動で行う場合の注意:
+
+- `wrangler.jsonc` の `name`（`findy-campus-hackathon-2`）を変更しない。公開URLが変わります
+- 本番は `trco0430` のCloudflareアカウントに紐づいています。別アカウントから `wrangler deploy` しないでください
+
+自動ビルドの設定はルートディレクトリ `/my-hackathon-app`、ビルドコマンド `npm run build`、デプロイコマンド `npx wrangler deploy`、本番ブランチ `main` です。
+
+---
+
+## 構成
+
+```
+src/
+├── index.tsx              # Honoルーター（agentsMiddleware をマウント）
+├── agents/
+│   └── group-agent.ts     # GroupAgent（state + schedule + RPC + Whisper判定）
+├── client/
+│   ├── app.tsx            # 画面の出し分け
+│   ├── screens/
+│   │   ├── EntryScreen.tsx     # グループ作成 / コードで参加
+│   │   ├── GroupRoomScreen.tsx # メンバー・アラーム一覧・ステータス
+│   │   ├── AlarmForm.tsx       # アラーム作成
+│   │   └── AlarmOverlay.tsx    # 発火時の全画面警報・音声確認
+│   └── lib/               # deviceId管理・JST変換・アラーム音
+└── style.css
 ```
 
-あとはこのディレクトリでコーディングエージェントを起動して、「ハッカソンのアプリを作りたい」と伝えれば、伴走スキルが選択肢を踏まえて進めてくれます。
+サーバー側の状態とRPCは `src/agents/group-agent.ts` に集約されています。REST APIは持たず、Agents SDK の `@callable()` によるRPCで完結しています。
 
-## 何が入っているの？
+---
 
-### アプリの雛形（Hono + Vite + React + Agents SDK）
+## 開発時のメモ
 
-[hono-agents-starter](https://github.com/yusukebe/hono-agents-starter) ベースの全部入り構成。AIを使わないふつうのWebアプリでも、このままでOKです。
-
-- `npm run dev` — ローカル開発サーバー
-- `npm run deploy` — Cloudflareへデプロイ（要 `npx wrangler login`）
-- `npm run cf-typegen` — `wrangler.jsonc` 変更後の型再生成
-
-> **公開 URL（固定）**: `https://findy-campus-hackathon-2.trco0430.workers.dev`  
-> `wrangler.jsonc` の `name` は `findy-campus-hackathon-2` のままにする（変更すると別URLになる）。  
-> 本番デプロイは まを の Cloudflare アカウント（`trco0430`）から行う。別アカウントで `wrangler deploy` しないこと。
-
-### エージェント用スキル（`npm run setup:skills` で取得）
-
-スキルファイル自体はこのリポジトリに同梱していません。`npm run setup:skills` を実行すると、[skills CLI](https://skills.sh) が以下を `.agents/skills/` と `.claude/skills/` にインストールします。Claude Code / Cursor / GitHub Copilot / Gemini CLI / Codex がそのまま読めます。
-
-- `findy-hackathon` — このハッカソンの伴走スキル。アイデア→実装→公開まで案内する
-- `hono` — Hono本体のAPI・ルーティング・ミドルウェアなど
-- `cloudflare` / `wrangler` / `workers-best-practices` / `agents-sdk` / `durable-objects` — Cloudflare公式スキル
-
-入れ直したいときも同じコマンドでOK。ほかのスキルも後から足せます（例: `npx skills add cloudflare/skills --skill sandbox-sdk`）。
-
-## 前提
-
-- Node.js (v20+) — `node -v` で確認
-- コーディングエージェント（強く推奨）— Claude Code / Cursor / GitHub Copilot / Gemini CLI など。無料で使えるものもあります
-- デプロイするなら Cloudflareアカウント（無料枠でOK / Workers AI も無料枠あり）。[こちら](https://www.cloudflare.com/ja-jp/)から登録できます
-
-### コーディングエージェントを持っていない人へ
-
-無料で始めたいなら:
-
-- GitHub Copilot Free — 誰でも無料（月あたりの利用上限あり）。VS Code / JetBrains で使える
-- Cursor — 無料枠ありのAIエディタ
-- Gemini CLI — 無料枠の大きいターミナル系エージェント
-
-Claude Code を使う場合は有料です（Pro / Max、または API 従量課金。新規アカウントに少額の無料クレジットあり）。
-
-## スターターを使わない場合
-
-既存のプロジェクトや好きな環境に、伴走スキルだけ入れることもできます。
-
-```sh
-npx skills add yusukebe/findy-campus-hackathon-02
-```
-
-## アプリの例
-
-- memo2task - <https://github.com/yusukebe/memo2task>
-
-## 関連
-
-- 勉強会・発表スライド: <https://workshop.yusuke.run/findy>
-- Cloudflare 公式スキル: <https://github.com/cloudflare/skills>
-- Hono スキル: <https://github.com/yusukebe/hono-skill>
+- **AIバインディングはローカル開発でも本物のWorkers AIに接続します**（`wrangler.jsonc` の `ai` バインディング）。オフラインでは音声確認が動きません
+- マイクの利用には `localhost` かHTTPSが必要です
+- `wrangler.jsonc` を変更したら `npm run cf-typegen` で型を再生成してください
+- エージェント用スキルを入れ直したいときは `npm run setup:skills`（Hono / Cloudflare / Agents SDK / Durable Objects などの公式スキルが `.claude/skills/` に入ります）
