@@ -28,6 +28,36 @@ export type GroupState = {
 }
 
 const TIMEOUT_SECONDS = 5 * 60
+/** フロントの AlarmForm maxLength と揃える */
+const MAX_MESSAGE_LENGTH = 100
+
+function requireNonEmpty(value: string, label: string): string {
+  const trimmed = value?.trim?.() ?? ''
+  if (!trimmed) {
+    throw new Error(`${label}が空です`)
+  }
+  return trimmed
+}
+
+function parseFutureFireAt(fireAt: string): Date {
+  const raw = requireNonEmpty(fireAt, '発火日時')
+  const date = new Date(raw)
+  if (Number.isNaN(date.getTime())) {
+    throw new Error('発火日時の形式が正しくありません')
+  }
+  if (date.getTime() <= Date.now()) {
+    throw new Error('発火日時は現在より未来を指定してください')
+  }
+  return date
+}
+
+function normalizeMessage(message: string | undefined | null): string {
+  const text = (message ?? '').trim()
+  if (text.length > MAX_MESSAGE_LENGTH) {
+    throw new Error(`メッセージは${MAX_MESSAGE_LENGTH}文字以内にしてください`)
+  }
+  return text
+}
 
 export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
   initialState: GroupState = {
@@ -76,16 +106,27 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
     if (!this.state.initialized) {
       throw new Error('グループが見つかりません')
     }
-    if (!this.state.members[targetDeviceId]) {
+
+    const creatorId = requireNonEmpty(creatorDeviceId, '作成者')
+    const targetId = requireNonEmpty(targetDeviceId, '対象者')
+
+    if (!this.state.members[creatorId]) {
+      throw new Error('作成者がこのグループのメンバーではありません')
+    }
+    if (!this.state.members[targetId]) {
       throw new Error('対象のメンバーが見つかりません')
     }
+
+    const fireAtDate = parseFutureFireAt(fireAt)
+    const normalizedMessage = normalizeMessage(message)
+
     const id = crypto.randomUUID()
     const alarm: Alarm = {
       id,
-      creatorDeviceId,
-      targetDeviceId,
-      fireAt,
-      message,
+      creatorDeviceId: creatorId,
+      targetDeviceId: targetId,
+      fireAt: fireAtDate.toISOString(),
+      message: normalizedMessage,
       status: 'scheduled',
       createdAt: new Date().toISOString()
     }
@@ -93,7 +134,7 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
       ...this.state,
       alarms: { ...this.state.alarms, [id]: alarm }
     })
-    await this.schedule(new Date(fireAt), 'fireAlarm', { alarmId: id })
+    await this.schedule(fireAtDate, 'fireAlarm', { alarmId: id })
     return id
   }
 
@@ -106,9 +147,22 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
     if (alarm.targetDeviceId !== deviceId) {
       throw new Error('このアラームの対象者ではありません')
     }
-    if (alarm.status !== 'fired') {
-      return
+
+    switch (alarm.status) {
+      case 'fired':
+        break
+      case 'confirmed':
+        throw new Error('このアラームは既に確認済みです')
+      case 'timed_out':
+        throw new Error('このアラームは時間切れのため確認できません')
+      case 'scheduled':
+        throw new Error('まだアラームが発火していません')
+      case 'cancelled':
+        throw new Error('このアラームは取り消されています')
+      default:
+        throw new Error('このアラームは確認できない状態です')
     }
+
     this.setState({
       ...this.state,
       alarms: {
@@ -118,9 +172,36 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
     })
   }
 
+  @callable()
+  cancelAlarm(deviceId: string, alarmId: string) {
+    const actorId = requireNonEmpty(deviceId, '操作者')
+    const alarm = this.state.alarms[alarmId]
+    if (!alarm) {
+      throw new Error('アラームが見つかりません')
+    }
+    if (!this.state.members[actorId]) {
+      throw new Error('このグループのメンバーではありません')
+    }
+    if (alarm.creatorDeviceId !== actorId && alarm.targetDeviceId !== actorId) {
+      throw new Error('このアラームを取り消す権限がありません')
+    }
+    if (alarm.status !== 'scheduled') {
+      throw new Error('予約中のアラームだけ取り消せます')
+    }
+
+    this.setState({
+      ...this.state,
+      alarms: {
+        ...this.state.alarms,
+        [alarmId]: { ...alarm, status: 'cancelled' }
+      }
+    })
+  }
+
   // schedule() から呼ばれる内部ハンドラ。クライアントからは呼ばない
   async fireAlarm(payload: { alarmId: string }) {
     const alarm = this.state.alarms[payload.alarmId]
+    // scheduled 以外（cancelled / confirmed 等）からは発火しない
     if (!alarm || alarm.status !== 'scheduled') {
       return
     }
@@ -137,6 +218,7 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
   // schedule() から呼ばれる内部ハンドラ。クライアントからは呼ばない
   timeoutAlarm(payload: { alarmId: string }) {
     const alarm = this.state.alarms[payload.alarmId]
+    // fired 以外（confirmed 済み等）は上書きしない
     if (!alarm || alarm.status !== 'fired') {
       return
     }
