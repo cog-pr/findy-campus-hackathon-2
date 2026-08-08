@@ -1,6 +1,7 @@
 # デモ・ピッチ用メモ（実装に合わせた版）
 
-5分台本の全体: [`../docs/PITCH.md`](../docs/PITCH.md)
+5分台本の全体: [`../docs/PITCH.md`](../docs/PITCH.md)  
+公開 URL: **https://wakemate.0908rikutti.workers.dev**（起動手順の正は [`README.md`](./README.md)）
 
 実装の正: **Cloudflare Agents（Durable Objects + `schedule` + `setState` のリアルタイム配信）**  
 今回やらない: Web Push / D1（仕様書 Won't）
