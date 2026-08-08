@@ -173,6 +173,38 @@ button.primary {
   border-radius: 8px;
 }
 
+.status-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 5px solid #ccc;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.status-banner strong {
+  font-size: 1.05rem;
+}
+
+.status-banner.waiting {
+  background: #fff3e0;
+  border-left-color: #ff8c00;
+  color: #9a3412;
+}
+
+.status-banner.timed-out {
+  background: #ffebee;
+  border-left-color: #e53935;
+  color: #b71c1c;
+}
+
+.status-banner-message {
+  opacity: 0.9;
+}
+
 .muted {
   color: #888;
   padding: 8px 0;
