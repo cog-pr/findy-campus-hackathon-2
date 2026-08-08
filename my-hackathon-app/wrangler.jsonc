@@ -7,15 +7,15 @@
   "durable_objects": {
     "bindings": [
       {
-        "name": "CounterAgent",
-        "class_name": "CounterAgent"
+        "name": "GroupAgent",
+        "class_name": "GroupAgent"
       }
     ]
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["CounterAgent"]
+      "new_sqlite_classes": ["GroupAgent"]
     }
   ]
 }
