@@ -35,17 +35,55 @@ const TIMEOUT_SECONDS = 5 * 60
 /** フロントの AlarmForm maxLength と揃える */
 const MAX_MESSAGE_LENGTH = 100
 
+type WakePhrase = {
+  /** 画面に表示する文 */
+  display: string
+  /**
+   * 合格とみなす表記ゆれ。Whisperは同じ発話でも漢字/かなの表記が揺れるため
+   * （例: 「なまむぎ」→「生むぎ」）、想定される表記を列挙して取りこぼしを防ぐ。
+   * display 自身は常に候補に含まれる。
+   */
+  variants?: string[]
+}
+
 /** 寝ぼけたままでは言い切りにくい、口が回る必要のある確認フレーズ */
-const WAKE_PHRASES = [
-  'おはようございます、今日も一日がんばります',
-  '赤巻紙 青巻紙 黄巻紙',
-  'すもももももももものうち',
-  '東京特許許可局に行ってきます',
-  'なまむぎ なまごめ なまたまご',
-  '今日はとてもいい天気ですね',
-  'バスガス爆発、バスガス爆発',
-  'この芝生に入らないでください'
+const WAKE_PHRASES: WakePhrase[] = [
+  {
+    display: 'おはようございます、今日も一日がんばります',
+    variants: ['おはようございます、今日も一日頑張ります']
+  },
+  {
+    display: '赤巻紙 青巻紙 黄巻紙',
+    variants: ['赤巻紙青巻紙黄巻紙', 'あかまきがみあおまきがみきまきがみ']
+  },
+  {
+    display: 'すもももももももものうち',
+    variants: ['すももも桃も桃のうち', '李も桃も桃のうち', 'スモモも桃も桃のうち']
+  },
+  { display: '東京特許許可局に行ってきます' },
+  {
+    display: '生麦 生米 生卵',
+    variants: ['生麦生米生卵', '生むぎ生ごめ生たまご', 'なまむぎなまごめなまたまご']
+  },
+  { display: '今日はとてもいい天気ですね' },
+  {
+    display: 'バスガス爆発、バスガス爆発',
+    variants: ['バスガスばくはつバスガスばくはつ']
+  },
+  {
+    display: 'この芝生に入らないでください',
+    variants: ['この芝生に入らないで下さい']
+  }
 ]
+
+/**
+ * そのフレーズについて合格とみなす表記の一覧。
+ * 表に無いフレーズ（過去に発行済みのもの）はそれ自身だけを候補にする。
+ */
+function acceptedFormsFor(phrase: string): string[] {
+  const entry = WAKE_PHRASES.find((p) => p.display === phrase)
+  return [phrase, ...(entry?.variants ?? [])]
+}
 
 /** 文字起こし結果とフレーズを比べるための正規化（記号・空白・カナ差を吸収） */
 function normalizeForCompare(text: string): string {
@@ -236,7 +274,13 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
       audio
     })) as { text?: string }
     const heard = result?.text ?? ''
-    const score = similarity(normalizeForCompare(heard), normalizeForCompare(alarm.wakePhrase))
+    const heardNormalized = normalizeForCompare(heard)
+    // 表記ゆれ候補のうち最も近いもので判定する
+    const score = Math.max(
+      ...acceptedFormsFor(alarm.wakePhrase).map((form) =>
+        similarity(heardNormalized, normalizeForCompare(form))
+      )
+    )
 
     // 音声認識の揺れを見込んで完全一致は求めない
     if (score < 0.6) {
@@ -291,7 +335,7 @@ export class GroupAgent extends Agent<CloudflareBindings, GroupState> {
     if (!alarm || alarm.status !== 'scheduled') {
       return
     }
-    const wakePhrase = WAKE_PHRASES[Math.floor(Math.random() * WAKE_PHRASES.length)]
+    const wakePhrase = WAKE_PHRASES[Math.floor(Math.random() * WAKE_PHRASES.length)].display
     this.setState({
       ...this.state,
       alarms: {
